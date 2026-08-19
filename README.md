@@ -1,2 +1,2 @@
 # midnight_blockchain
-Midnight Private party Application build 
+Midnight Private party Application Project build during workshop
