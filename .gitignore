@@ -1,0 +1,6 @@
+node_modules/
+.next/
+out/
+.env
+public/zk/private-party/
+contract/src/managed/

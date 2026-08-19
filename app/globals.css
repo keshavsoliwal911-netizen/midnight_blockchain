@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root { --ink: #17211b; --paper: #f2efe8; --mint: #b9e6c9; --coral: #e8755c; --line: #c9c8be; }
+* { box-sizing: border-box; }
+body { margin: 0; background: radial-gradient(circle at 12% 8%, #d9ead7 0, transparent 34%), var(--paper); color: var(--ink); font-family: 'Space Grotesk', sans-serif; }
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; }
+.shell { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
+.topbar { display: flex; justify-content: space-between; align-items: center; padding: 26px 0; border-bottom: 1px solid var(--line); }
+.brand { font-weight: 700; letter-spacing: .02em; }
+.eyebrow { font: 500 11px 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .12em; color: #587064; }
+.hero { display: grid; grid-template-columns: 1.2fr .8fr; gap: 70px; align-items: end; padding: 88px 0 54px; }
+h1 { font-size: clamp(3rem, 8vw, 7rem); line-height: .9; letter-spacing: -.06em; max-width: 760px; margin: 12px 0 26px; }
+h2 { font-size: 2rem; letter-spacing: -.04em; margin: 0 0 14px; }
+p { line-height: 1.55; }
+.lede { font-size: 1.1rem; max-width: 520px; }
+.panel { border: 1px solid var(--ink); background: rgba(255,255,255,.38); padding: 24px; box-shadow: 8px 8px 0 var(--mint); }
+.panel + .panel { margin-top: 24px; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+.button { border: 1px solid var(--ink); background: var(--ink); color: var(--paper); padding: 12px 18px; font-weight: 600; }
+.button.alt { background: transparent; color: var(--ink); }
+.button:disabled { opacity: .5; cursor: wait; }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 36px 0 80px; }
+.grid .panel { box-shadow: none; }
+.form { display: grid; gap: 14px; max-width: 660px; }
+label { display: grid; gap: 6px; font: 500 12px 'DM Mono', monospace; text-transform: uppercase; }
+input, textarea, select { border: 1px solid var(--ink); background: #fffdf7; padding: 12px; color: var(--ink); }
+textarea { min-height: 100px; resize: vertical; }
+.status { padding: 12px; border-left: 4px solid var(--coral); background: #fff5f0; font-family: 'DM Mono', monospace; font-size: 12px; }
+.private { color: #586d62; font-family: 'DM Mono', monospace; font-size: 12px; }
+@media (max-width: 760px) { .hero { grid-template-columns: 1fr; gap: 28px; padding-top: 54px; } .grid { grid-template-columns: 1fr; } h1 { font-size: 4.2rem; } .shell { width: min(100% - 28px, 620px); } }

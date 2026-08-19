@@ -1,0 +1,91 @@
+pragma language_version 0.23;
+import CompactStandardLibrary;
+
+export enum PartyState {
+    OPEN,
+    CLOSED
+}
+
+export sealed ledger host: Bytes<32>;
+export sealed ledger eventInfoCommitment: Bytes<32>;
+export sealed ledger rsvpCommitmentSalt: Bytes<32>;
+export sealed ledger deadline: Uint<64>;
+export sealed ledger maxGuests: Uint<16>;
+export ledger partyState: PartyState;
+export ledger guestCount: Uint<16>;
+export ledger invitations: Map<Bytes<32>, Boolean>;
+export ledger rsvps: Map<Bytes<32>, Bytes<32>>;
+
+constructor(
+    _eventInfoCommitment: Bytes<32>,
+    _deadline: Uint<64>,
+    _maxGuests: Uint<16>,
+    _hostSecret: Bytes<32>
+) {
+    assert(_deadline > 0, "Deadline must be greater than zero");
+
+    host = disclose(getDappPublicKey(_hostSecret));
+    eventInfoCommitment = disclose(_eventInfoCommitment);
+    rsvpCommitmentSalt = persistentCommit<Bytes<32>>(_eventInfoCommitment, _hostSecret);
+    deadline = disclose(_deadline);
+    maxGuests = disclose(_maxGuests);
+    partyState = PartyState.OPEN;
+    guestCount = 0;
+}
+
+export circuit addInvitation(_inviteSecret: Bytes<32>, _hostSecret: Bytes<32>): [] {
+    assert(isHost(_hostSecret), "Only the host can manage invitations");
+    assert(partyState == PartyState.OPEN, "Party is closed");
+    invitations.insert(invitationCommitment(_inviteSecret), true);
+}
+
+export circuit revokeInvitation(_inviteSecret: Bytes<32>, _hostSecret: Bytes<32>): [] {
+    assert(isHost(_hostSecret), "Only the host can manage invitations");
+    assert(partyState == PartyState.OPEN, "Party is closed");
+    invitations.remove(invitationCommitment(_inviteSecret));
+}
+
+export circuit submitRsvp(
+    _response: Bytes<32>,
+    _inviteSecret: Bytes<32>,
+    _guestSecret: Bytes<32>
+): [] {
+    assert(partyState == PartyState.OPEN, "Party is closed");
+    assert(blockTime() <= deadline, "RSVP deadline has passed");
+    assert(isValidResponse(_response), "Invalid RSVP response");
+
+    const invite = invitationCommitment(_inviteSecret);
+    assert(invitations.member(invite), "Invitation is not valid");
+
+    const guestId = getDappPublicKey(_guestSecret);
+    const firstRsvp = !rsvps.member(guestId);
+    if (firstRsvp && maxGuests > 0) {
+        assert(guestCount < maxGuests, "Guest capacity has been reached");
+        guestCount = guestCount + 1;
+    }
+
+    rsvps.insert(guestId, persistentCommit<Bytes<32>>(_response, _guestSecret));
+}
+
+export circuit closeParty(_hostSecret: Bytes<32>): [] {
+    assert(isHost(_hostSecret), "Only the host can close the party");
+    partyState = PartyState.CLOSED;
+}
+
+circuit isHost(_secret: Bytes<32>): Boolean {
+    return host == getDappPublicKey(_secret);
+}
+
+circuit invitationCommitment(_inviteSecret: Bytes<32>): Bytes<32> {
+    return persistentHash<Vector<2, Bytes<32>>>([pad(32, "private-party:invite:"), _inviteSecret]);
+}
+
+circuit getDappPublicKey(_secret: Bytes<32>): Bytes<32> {
+    return persistentHash<Vector<2, Bytes<32>>>([pad(32, "private-party:guest:"), _secret]);
+}
+
+circuit isValidResponse(_response: Bytes<32>): Boolean {
+    return _response == pad(32, "ATTENDING") ||
+        _response == pad(32, "NOT_ATTENDING") ||
+        _response == pad(32, "MAYBE");
+}
